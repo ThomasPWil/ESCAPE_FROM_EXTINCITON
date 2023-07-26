@@ -44,7 +44,8 @@
             this.setGravityY(3000); //We will set gravity *per object* rather than for the scene!
         }
     }
-
+     
+    /*
     class Carrot extends Phaser.Physics.Arcade.Sprite
     {
         constructor(scene, x, y)
@@ -56,19 +57,40 @@
             this.setGravityY(1000);
         }
     }
+      */
 
     class Lava extends Phaser.Physics.Arcade.Sprite
     {
-        constructor(scene, x, y, spritesheet, animations)
+        constructor(scene, x, y, spritesheet, animation)
         {
             super(scene, x, y, spritesheet);
-            this.animations = animations;
+            this.animation = animation;
             scene.add.existing(this);
             scene.physics.add.existing(this);
             this.setScale(2);
             this.setCollideWorldBounds(true);
             this.setGravityY(3000);
-            this.play(animations);
+            this.play(animation);
+        }
+        addTween(scene, xDist, yDist, time)
+        {
+            scene.tweens.add({ targets: this, x: xDist, y: yDist, duration: time, ease: 'Sine.easeInOut', repeat: -1, yoyo: true });
+        }
+    }
+
+    
+    class Coin extends Phaser.Physics.Arcade.Sprite
+    {
+        constructor(scene, x, y, spritesheet, animation)
+        {
+            super(scene, x, y, spritesheet);
+            this.animation = animation;
+            scene.add.existing(this);
+            scene.physics.add.existing(this);
+            this.setScale(2);
+            this.setCollideWorldBounds(true);
+            this.setGravityY(3000);
+            this.play(animation);
         }
         addTween(scene, xDist, yDist, time)
         {
@@ -80,21 +102,28 @@
 
     //Game Objects
     var platforms;
+    var CoinIcon;
     var player;
-    var LavaGroup;
+    var LavaGroup = [];
+    var coinGroup = [];
+    var coinsCollected = 0;
     var carrots = [];
     var totalCarrots = 12;
+    var totalCoins = Phaser.Math.Between(0,20)
     var carrotsEaten = 0;
-    var dashCoolDown = 5;
+    var dashCoolDown = 4;
+    var invisframes = 0;
 
     //Keyboard controls
     var cursors;
     var keys;
     var space;
 
+    // GUI vars
     var gui;
     var guiTimer;
-    var GOgui
+    var GOgui;
+    var CoinGUI;
 
     function preload()
     {   
@@ -102,8 +131,11 @@
         this.load.image('platform', 'assets/platform.png');
         this.load.image('player', 'assets/wabbit.png');
         this.load.image('carrot', 'assets/carrot.png');
+        this.load.image('coinIcon', 'Assets/Coin_icon.png');
         
         this.load.atlas('lava','Assets/lava.png','Assets/lava.json')
+
+        this.load.atlas('coin','Assets/coin.png','Assets/coin.json')
     }
 
     function create()
@@ -117,29 +149,52 @@
 
        this.physics.add.collider(player, platforms);
        
+      
+       createCoinIcon(this);
+
        
        // creating lava and have it collide with player
        let lava_animations = {}
-       var run_lava_anims = this.anims.create({key: 'lava/lava0', frames: this.anims.generateFrameNames('lava', {prefix: 'lava/lava0',  end:3 , zeroPad:2}),repeat:-1, frameRate:4})
+       
+       var run_lava_anims = this.anims.create({key: 'lava-animation', frames: this.anims.generateFrameNames('lava', {prefix: 'lava/lava',  end:10 , zeroPad:3}),repeat:-1, frameRate:10});
+       
+       lava = new Lava(this, game.scale.width/2, game.scale.height,'lava', 'lava-animation');
+       this.physics.add.overlap(player, lava, LavaCollide, null, this);
+       lava.setScale(6.04, 1.5).refreshBody();
+       
+       LavaGroup.push(lava);
 
-       lava = new Lava(this, 400, 400, 'lava', lava_animations);
-       this.physics.add.overlap(player, Lava, LavaCollide, null, this);
-       lava.play(lava.animations['run']);
-        
-      
+       // creating coin sprite and have it collide with player
+       let coin_animations = {}
+       
+       var run_coin_anims = this.anims.create({key: 'coin-animation', frames: this.anims.generateFrameNames('coin', {prefix: 'coin/coin', end:3 , zeroPad:3}),repeat:-1, frameRate: 4});
+
+       
+       for (var i = 0; i < totalCoins; i++)
+       {
+       coin = new Coin(this, Phaser.Math.Between(0,300), Phaser.Math.Between(0,300),'coin', 'coin-animation')
+       this.physics.add.overlap(player, coin, coinCollide, null, this);
+       this.physics.add.collider(coin, platforms);
+       coin.setScale(1.3, 1).refreshBody();
+
+       coinGroup.push(coin);
+       }
+         
       
        
 
 
        //Create the carrot interactables
-       for (var i = 0; i < totalCarrots; i++)
+       /*for (var i = 0; i < totalCarrots; i++)
        {
            let myCarrot = new Carrot(this, Phaser.Math.Between(0, game.scale.width), Phaser.Math.Between(0, game.scale.height-80));
            this.physics.add.collider(myCarrot, platforms);
            carrots.push(myCarrot);
        }
+       
 
        this.physics.add.overlap(player, carrots, eatCarrot, null, this);
+       */
 
        //Set up user input
        cursors = this.input.keyboard.createCursorKeys();
@@ -151,10 +206,17 @@
 
        gui = this.add.text(16, 16, '', {fontSize: '32px', fill: '#000'});
 
-       // code for game over
-       GOgui = this.add.text(game.scale.width/2, 32, '',{fontSize: '108px', fill: "#000"})
+       // code for game over text
+       CoinGUI = this.add.text(1130,100,'0', {fontSize: '35px',fill: '#000'});
+
+       GOgui = this.add.text(game.scale.width/2, 32, '',{fontSize: '100px', fill: "#000"})
+
        jumpGUI = this.add.text(500, 150, '', {fontSize: '32px', fill: '#000'});
+
        dashGUI = this.add.text(500, 182, '', {fontSize: '32px', fill: '#000'});
+
+      
+       
 
        if (player.lives <= 0)
        {
@@ -165,8 +227,6 @@
 
        }
 
-
-       
     }
 
     function createPlatforms(scene)
@@ -178,8 +238,17 @@
         basePlatform.setScale(3, 1).refreshBody(); //scales the base platform in the x axis to cover the entire floor
 
         platforms.create(250, 450, 'platform'); //creates the upper left platform
-        //platforms.create(950, 500, 'platform'); //creates the bottome right platform
+        platforms.create(900, 300, 'platform'); //creates the bottome right platform
     }
+
+    function createCoinIcon(scene)
+    {
+         CoinIcon =  scene.physics.add.staticGroup();
+         let Icon = CoinIcon.create(1110,115,'coinIcon');
+         //CoinIcon.create(200,200);
+
+    }
+       
 
     
     
@@ -187,9 +256,17 @@
     function update()
     {
         
-        if (dashCoolDown === 0) {
-            dashCoolDown-=0.01;
+        if (dashCoolDown !== 0) {
+            dashCoolDown -= 0.01;
+            
             //console.log(dashCoolDown.toFixed(3));
+        }
+
+        // code for invisibility frames
+        if (invisframes !== 0) {
+            invisframes -= 1
+            console.log(invisframes)
+
         }
         //Player will not move in the x-axis unless a movement key is being pressed
         player.setVelocityX(0);
@@ -227,18 +304,21 @@
           player.currentJumps++;
         }
     }
+
     function dash(event)
     {
         if (dashCoolDown <= 0) {
           player.setVelocityX(5000);
-          dashCoolDown = 2;
+          dashCoolDown = 4;
           
         } else {
             console.log("No dash");
+            
         }
     }
 
     //This function is called when a player overlaps with a carrot
+    /*
     function eatCarrot(player, carrot)
     {
         carrot.disableBody(true, true); //remove that particular carrot from the game (physics and visibility)
@@ -255,15 +335,26 @@
             console.log(player.carrotsEaten);
         }
     }
+     */
 
     function LavaCollide(player,lava){
 
-        //console.log('kill player')
-        if (player.lives > 0)
-    {
+        
+        if (player.lives > 0 && invisframes === 0)
+      {
+        // bounce player back upon lava collide
+        player.setVelocityY(-1300);
+        player.setVelocityX(-500);
+
+        console.log('kill player');
         player.lives -= 1;
-        console.log(player.lives)
+        invisframes = 500;
+
+        
     }
+
+  
+
     if (player.lives <= 0)
        {
            
@@ -272,6 +363,15 @@
 
 
        }
+
+    }
+
+    function coinCollide(player,coin){
+        coin.disableBody(true, true);
+        console.log('coin collected');
+        coinsCollected += 1;
+        CoinGUI.setText(coinsCollected);
+
 
     }
 
