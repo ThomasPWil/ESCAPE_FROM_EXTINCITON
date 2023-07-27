@@ -44,6 +44,9 @@
             this.setGravityY(3000); //We will set gravity *per object* rather than for the scene!
         }
     }
+
+
+    
      
     /*
     class Carrot extends Phaser.Physics.Arcade.Sprite
@@ -98,6 +101,26 @@
         }
     }
 
+    class Meteor extends Phaser.Physics.Arcade.Sprite
+    {
+        constructor(scene, x, y, spritesheet, animation)
+        {
+            super(scene, x, y, spritesheet);
+            this.animation = animation;
+            scene.add.existing(this);
+            scene.physics.add.existing(this);
+            this.setScale(2);
+            
+            this.setGravityY(0);
+            this.play(animation);
+            
+        }
+        addTween(scene, xDist, yDist, time)
+        {
+            scene.tweens.add({ targets: this, x: xDist, y: yDist, duration: time, ease: 'Sine.easeInOut', repeat: -1, yoyo: true });
+        }
+    }
+
     var game = new Phaser.Game(config);
 
     //Game Objects
@@ -106,13 +129,17 @@
     var player;
     var LavaGroup = [];
     var coinGroup = [];
+    var meteorGroup = [];
+    var meteor
+    var lavaGround;
     var coinsCollected = 0;
-    var carrots = [];
-    var totalCarrots = 12;
+    
+   
     var totalCoins = Phaser.Math.Between(0,20)
-    var carrotsEaten = 0;
+    
     var dashCoolDown = 4;
     var invisframes = 0;
+    var background;
 
     //Keyboard controls
     var cursors;
@@ -132,16 +159,19 @@
         this.load.image('player', 'assets/wabbit.png');
         this.load.image('carrot', 'assets/carrot.png');
         this.load.image('coinIcon', 'Assets/Coin_icon.png');
+        this.load.image('stillLava','Assets/Lava_still.png')
         
-        this.load.atlas('lava','Assets/lava.png','Assets/lava.json')
+       
 
         this.load.atlas('coin','Assets/coin.png','Assets/coin.json')
+
+        this.load.atlas('meteor','Assets/meteor.png', 'Assets/meteor.json' )
     }
 
     function create()
     {
         //Set the background origin to be at (0, 0) or top left corner of the image rather than the center of the image asset
-       let background = this.add.tileSprite(0, 0, game.scale.width, game.scale.height, 'sky').setOrigin(0, 0);
+       background = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sky').setOrigin(0, 0).setScrollFactor(0,1);
       
        //Create the platforms and the player character set to collide with the platforms
        createPlatforms(this);
@@ -154,20 +184,21 @@
 
        
        // creating lava and have it collide with player
-       let lava_animations = {}
        
-       var run_lava_anims = this.anims.create({key: 'lava-animation', frames: this.anims.generateFrameNames('lava', {prefix: 'lava/lava',  end:10 , zeroPad:3}),repeat:-1, frameRate:10});
        
-       lava = new Lava(this, game.scale.width/2, game.scale.height,'lava', 'lava-animation');
-       this.physics.add.overlap(player, lava, LavaCollide, null, this);
-       lava.setScale(6.04, 1.5).refreshBody();
+       lavaGround = this.add.tileSprite(0, 600, 2500, 100, 'stillLava').setScrollFactor(0,1);
+       this.physics.add.existing(lavaGround);
        
-       LavaGroup.push(lava);
+       
+       this.physics.add.overlap(player, lavaGround,LavaCollide,null,this);
 
-       // creating coin sprite and have it collide with player
+
+       // creating coins
        let coin_animations = {}
        
        var run_coin_anims = this.anims.create({key: 'coin-animation', frames: this.anims.generateFrameNames('coin', {prefix: 'coin/coin', end:3 , zeroPad:3}),repeat:-1, frameRate: 4});
+
+       
 
        
        for (var i = 0; i < totalCoins; i++)
@@ -179,8 +210,27 @@
 
        coinGroup.push(coin);
        }
-         
-      
+
+       // creating meteor
+       let meteor_animations = {}
+
+       var run_meteor_anims = this.anims.create({key: 'meteor-animation', frames: this.anims.generateFrameNames('meteor', {prefix: 'meteor/meteor', end:3 , zeroPad:3}), repeat: -1, frameRate: 4})
+        
+       let active = true
+
+       if (active = true){
+       this.timedEvent = this.time.delayedCall(3000, Createmeteor, [], this);
+       meteor = new Meteor(this,500,200, 'meteor', 'meteor-animation');
+       }
+
+       
+       this.physics.add.existing(meteor);
+       this.physics.add.collider(meteor, platforms);
+       this.physics.add.overlap(player, meteor, meteorCollide, null,this);
+       
+       meteorGroup.push(meteor);
+
+
        
 
 
@@ -207,15 +257,15 @@
        gui = this.add.text(16, 16, '', {fontSize: '32px', fill: '#000'});
 
        // code for game over text
-       CoinGUI = this.add.text(1130,100,'0', {fontSize: '35px',fill: '#000'});
+       CoinGUI = this.add.text(1130,100,'0', {fontSize: '35px',fill: '#000'}).setScrollFactor(0);
 
-       GOgui = this.add.text(game.scale.width/2, 32, '',{fontSize: '100px', fill: "#000"})
+       GOgui = this.add.text(game.scale.width/2, 32, '',{fontSize: '100px', fill: "#000"}).setScrollFactor(0);
 
        jumpGUI = this.add.text(500, 150, '', {fontSize: '32px', fill: '#000'});
 
        dashGUI = this.add.text(500, 182, '', {fontSize: '32px', fill: '#000'});
 
-      
+      this.cameras.main.startFollow(player, false,1,0,0,0);
        
 
        if (player.lives <= 0)
@@ -244,17 +294,21 @@
     function createCoinIcon(scene)
     {
          CoinIcon =  scene.physics.add.staticGroup();
-         let Icon = CoinIcon.create(1110,115,'coinIcon');
-         //CoinIcon.create(200,200);
+         let Icon = CoinIcon.create(1110,115,'coinIcon').setScrollFactor(0);
+         
 
     }
-       
-
+  
     
     
 
     function update()
     {
+        
+        meteor.setVelocityX(-200);
+
+        background.tilePositionX += 2;
+        lavaGround.tilePositionX += 2;
         
         if (dashCoolDown !== 0) {
             dashCoolDown -= 0.01;
@@ -289,6 +343,13 @@
         {
             player.setVelocityX(400);
         }
+      
+       
+       
+         
+       
+         
+       
     }
 
     function jump(event)
@@ -337,7 +398,7 @@
     }
      */
 
-    function LavaCollide(player,lava){
+    function LavaCollide(player,lavaGround){
 
         
         if (player.lives > 0 && invisframes === 0)
@@ -346,12 +407,16 @@
         player.setVelocityY(-1300);
         player.setVelocityX(-500);
 
-        console.log('kill player');
+       
         player.lives -= 1;
         invisframes = 500;
 
         
     }
+
+
+
+
 
   
 
@@ -375,6 +440,27 @@
 
     }
 
+         
+    function meteorCollide(player,meteor){
+
+   
+   if (player.lives > 0 && invisframes === 0)
+   { 
+    // bounce player back upon meteor collide
+    player.setVelocityY(-1300);
+    player.setVelocityX(300);
+    console.log('kill player');
+
+    player.lives -= 1;
+    invisframes = 500;
+   }
+   } 
+
+   function Createmeteor()
+    {
+        meteor = new Meteor(this,player.x + Phaser.Math.Between(100,200), player.y + Phaser.Math.Between(100,200), 'meteor', 'meteor-animation');
+        this.timedEvent = this.time.delayedCall(1000, this.onEvent, [], this);
+    }
    
     //Reset the gui text to be empty after the guiTimer elapses
     function removeText()
