@@ -45,7 +45,34 @@
         }
     }
 
-
+    class Dino extends Phaser.Physics.Arcade.Sprite 
+    {
+        totalJumps = 2
+        currentJumps = 0
+        constructor (scene, x, y, spritesheet, animations) {
+          super(scene, x, y, spritesheet)
+          this.animations = animations
+          scene.add.existing(this)
+          scene.physics.add.existing(this)
+          this.setScale(2)
+          this.setCollideWorldBounds(true)
+          this.setGravityY(3000)
+          this.play(animations)
+        }
+    
+    addTween (scene, xDist, yDist, time) 
+    {
+          scene.tweens.add({
+            targets: this,
+            x: xDist,
+            y: yDist,
+            duration: time,
+            ease: 'Sine.easeInOut',
+            repeat: -1,
+            yoyo: true
+          })
+        }
+    } 
     
      
     /*
@@ -154,18 +181,23 @@
 
     function preload()
     {   
+        // envoirment assets
         this.load.image('sky', 'assets/clouds.png');
         this.load.image('platform', 'assets/platform.png');
-        this.load.image('player', 'assets/wabbit.png');
-        this.load.image('carrot', 'assets/carrot.png');
+        this.load.image('stillLava','Assets/Lava_still.png');
+      
+        // UI
         this.load.image('coinIcon', 'Assets/Coin_icon.png');
-        this.load.image('stillLava','Assets/Lava_still.png')
+        this.load.image('heart', 'Assets/heart.png');
         
-       
-
-        this.load.atlas('coin','Assets/coin.png','Assets/coin.json')
-
-        this.load.atlas('meteor','Assets/meteor.png', 'Assets/meteor.json' )
+        // game platforms
+        this.load.image('platform001', 'Assets/platform001.png');
+        this.load.image('platform004', 'Assets/platform004.png');
+        
+        // game animations
+        this.load.atlas('coin','Assets/coin.png','Assets/coin.json');
+        this.load.atlas('meteor','Assets/meteor.png', 'Assets/meteor.json' );
+        this.load.atlas('dino','assets/dinoMovements.png','Assets/dinoMovements.json');
     }
 
     function create()
@@ -173,12 +205,69 @@
         //Set the background origin to be at (0, 0) or top left corner of the image rather than the center of the image asset
        background = this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'sky').setOrigin(0, 0).setScrollFactor(0,1);
       
-       //Create the platforms and the player character set to collide with the platforms
-       createPlatforms(this);
-       player = new Player(this, 250, 375);
+        // Dino player
+        let animations = {}
+        //var run = this.anims.create({ key: 'dinoDayRun/dinoDayRun', frames: this.anims.generateFrameNames('dino', { prefix: 'dinoDayRun/dinoDayRun', end: 3, zeroPad: 3 }), repeat: -1, frameRate:8});
+        var run = this.anims.create({key: 'run/dinoDayRun',frames: this.anims.generateFrameNames('dino', {prefix: 'run/dinoDayRun',end: 3,zeroPad: 3 }),repeat: -1,frameRate: 8})
+        animations['run'] = run
 
-       this.physics.add.collider(player, platforms);
+        var jumpAnimation = this.anims.create({key: 'run/DinoDayRun_Jump',frames: this.anims.generateFrameNames('dino', {prefix: 'run/DinoDayRun_Jump',end: 0,zeroPad: 0}),repeat: -1,frameRate: 1})
+        animations['jump'] = jumpAnimation
+
+        dino = new Dino(this, 30, 30, 'dino', animations).setScale(0.999)
+        this.physics.add.collider(dino, platforms, null, platcheck, this)
+        dino.play(dino.animations['run'])
+
+        function platcheck (dino, platform) {
+          if (dino.body.velocity.y >= 0 && dino.y < platform.y - 50) {
+            return true
+            dino.body.velocity.y
+          }
+          return false
+        }
+
+
+
        
+        createPlatforms(this)
+        createHearts(this)
+
+
+
+
+       //Create the platforms and the player character set to collide with the platforms
+       function createPlatforms (scene) {
+       createPlatforms(this);
+       platforms = scene.physics.add.staticGroup()
+
+        //basePlatform is the floor of the game
+        let basePlatform = platforms.create(
+          game.scale.width / 2,
+          game.scale.height - 30,
+          'platform'
+        )
+        basePlatform.setScale(3, 1).refreshBody() //scales the base platform in the x axis to cover the entire floor
+
+        let xPos = Phaser.Math.Between(400, 900)
+        let yPos = 500
+
+        // .setScale(2.75).refreshBody()
+        platforms
+          .create(100, 500, 'platform001')
+          .setScale(2.5)
+          .refreshBody()
+        platforms.create(xPos, yPos, 'platform004')
+      }
+
+
+      function createHearts (scene) {
+        hearts = scene.physics.add.staticGroup()
+        hearts.create(850, 100, 'heart').setScale(1.25)
+        hearts.create(900, 100, 'heart').setScale(1.25)
+        hearts.create(975, 100, 'heart').setScale(1.25)
+        hearts.create(1075, 100, 'heart').setScale(1.25)
+        hearts.create(1125, 100, 'heart').setScale(1.25)
+      }
       
        createCoinIcon(this);
 
@@ -305,7 +394,7 @@
     function update()
     {
         
-        meteor.setVelocityX(-200);
+        meteor.setVelocityX(-300);
 
         background.tilePositionX += 2;
         lavaGround.tilePositionX += 2;
@@ -329,19 +418,20 @@
         player.setDragX(1000);
 
         //This will reset the number of jumps available to the player whenever the player lands
-        if (player.body.touching.down) {
-            player.currentJumps = 0;
+        if (dino.body.touching.down) {
+            dino.play(dino.animations['run'], true)
+            dino.currentJumps = 0;
         }
 
         //Handle player movements
         if (cursors.left.isDown || keys.A.isDown)
         {
-            player.setVelocityX(-400);
+            dino.setVelocityX(-400);
         }
 
         if (cursors.right.isDown || keys.D.isDown)
         {
-            player.setVelocityX(400);
+            dino.setVelocityX(400);
         }
       
        
@@ -354,22 +444,22 @@
 
     function jump(event)
     {
-        if (player.body.touching.down) {
+        if (dino.body.touching.down) {
           
           //If the player is on the ground, the player can jump
-          player.setVelocityY(-1100);
-          player.currentJumps++;
+          dino.setVelocityY(-1100);
+          dino.currentJumps++;
         } else if (player.currentJumps < player.totalJumps) {
           //If the player is not on the ground but has an available air jump, use that jump
-          player.setVelocityY(-800);
-          player.currentJumps++;
+          dino.setVelocityY(-800);
+          dino.currentJumps++;
         }
     }
 
     function dash(event)
     {
         if (dashCoolDown <= 0) {
-          player.setVelocityX(5000);
+          dino.setVelocityX(dino.body.velocity.x+500);
           dashCoolDown = 4;
           
         } else {
@@ -405,11 +495,11 @@
       {
         // bounce player back upon lava collide
         player.setVelocityY(-1300);
-        player.setVelocityX(-500);
+        player.setVelocityX(-5000);
 
        
         player.lives -= 1;
-        invisframes = 500;
+        invisframes = 125;
 
         
     }
@@ -448,20 +538,29 @@
    { 
     // bounce player back upon meteor collide
     player.setVelocityY(-1300);
-    player.setVelocityX(300);
+    player.setVelocityX(3000);
     console.log('kill player');
 
     player.lives -= 1;
-    invisframes = 500;
+    invisframes = 125;
    }
    } 
 
    function Createmeteor()
     {
-        meteor = new Meteor(this,player.x + Phaser.Math.Between(100,200), player.y + Phaser.Math.Between(100,200), 'meteor', 'meteor-animation');
-        this.timedEvent = this.time.delayedCall(1000, this.onEvent, [], this);
+        meteor = new Meteor(this,player.x + Phaser.Math.Between(200, 300), player.y + Phaser.Math.Between(100,150), 'meteor', 'meteor-animation');
+        this.timedEvent = this.time.delayedCall(5000, Createmeteor, [], this);
     }
-   
+       
+    function onEvent()
+     {
+        dino.setVelocityX(dino.body.velocity.x-500);
+      }
+
+    
+
+
+
     //Reset the gui text to be empty after the guiTimer elapses
     function removeText()
     {
