@@ -1,3 +1,8 @@
+
+Hailin Chen
+3:41 PM (3 minutes ago)
+to me
+
 <!DOCTYPE html>
 
 <html>
@@ -89,12 +94,12 @@
       var platformSpeed
       var backgroundSpeed = platformSpeed * 0.25
       var timer = 0;
-      var Xvel = 0;
+      var isDashing = false;
 
       function preload () {
         //this.load.image('sky', 'assets/clouds.png');
         this.load.image('sky', 'assets/white.png')
-        this.load.image('platform', 'assets/platform.png')
+        this.load.image('platform', 'assets/platform002.png')
         this.load.image('heart', 'assets/heart.png')
         this.load.image('platform001', 'assets/platform001.png')
         this.load.image('platform004', 'assets/platform004.png')
@@ -125,7 +130,6 @@
           repeat: -1,
           frameRate: 8
         })
-        console.log(run)
         animations['run'] = run
         var jumpAnimation = this.anims.create({
           key: 'run/DinoDayRun_Jump',
@@ -181,9 +185,9 @@
         keys = this.input.keyboard.addKeys('A, D')
         space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         space.on('down', jump); //calls jump function when space is pressed
-        q = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q)
-        q.on('down', dash)
-        
+        shift = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT)
+        shift.on('down', dash) //calls jump function when space is pressed
+
         gui = this.add.text(16, 16, '', { fontSize: '32px', fill: '#000' })
       }
 
@@ -206,7 +210,7 @@
           .create(100, 500, 'platform001')
           .setScale(2.5)
           .refreshBody()
-        platforms.create(xPos, yPos, 'platform004')
+        //platforms.create(xPos, yPos, 'platform004')
       }
 
       function createHearts (scene) {
@@ -220,14 +224,19 @@
 
       function update () {
 
-      
-        if (dashCoolDown > 0) {
-          dashCoolDown -= 0.01
-          //console.log(dashCoolDown.toFixed(3));
+        //dino.setVelocityX(0);
+        if(timer>0){
+          //dino.play(dino.animations["dash"])
+          timer--;
+          if(timer==70){
+            dino.setVelocityX(dino.body.velocity.x-1000);
+            dino.play(dino.animations['run'], true)
+          }
         }
-        
-        if (dino.body.touching.down) {
+
+        if (dino.body.touching.down && (isDashing==false)) {
           dino.play(dino.animations['run'], true)
+          isDashing = false;
           dino.currentJumps = 0
         }
         if (cursors.left.isDown || keys.A.isDown) {
@@ -239,38 +248,35 @@
         }*/
         if (cursors.right.isDown || keys.D.isDown) {
           dino.setVelocityX(400)
+
         }
       }
 
       function jump (event) {
         if (dino.body.touching.down) {
+          isDashing = false;
           dino.play(dino.animations['jump'], true)
           dino.setVelocityY(-1100)
           dino.currentJumps++
-          console.log(dino.currentJumps)
         } else if (dino.currentJumps < dino.totalJumps) {
-          console.log(dino.animations['doubleJump'])
+          isDashing = false
           dino.play(dino.animations['doubleJump'], true)
-          //If the player is not on the ground but has an available air jump, use that jump
+          
           dino.setVelocityY(-800)
           dino.currentJumps++
-          console.log('Current jumps: ' + String(dino.currentJumps))
         }
       }
       function dash(event){
-        console.log(dashCoolDown);
-        if (dashCoolDown<0)
+        if (timer===0)
         {
-          dino.setVelocityX(dino.body.velocity.x-500);
-          //delayed call to reset velocity to prev velocity
-          
-          
+          dino.play(dino.animations['dash'], true)
+          //console.log(dino.animations['dash'])
+          dino.setVelocityX(dino.body.velocity.x+1000)
+          isDashing = true
+          timer = 100;
         }
       }
 
-      function onEvent(){/*  */
-        Xvel = 0;
-      }
       function removeText () {
         gui.setText('')
       }
