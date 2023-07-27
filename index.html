@@ -22,6 +22,7 @@
         }
       }
 
+      /*
       class Player extends Phaser.Physics.Arcade.Sprite {
         carrotsEaten = 0
         totalJumps = 2
@@ -38,6 +39,7 @@
           this.play(animations)
         }
       }
+      */
 
       class Dino extends Phaser.Physics.Arcade.Sprite {
         totalJumps = 2
@@ -201,7 +203,7 @@
 
         if (dino.body.touching.down) {
           dino.play(dino.animations['run'], true)
-          dino.currentJumps = 2
+          dino.currentJumps = 0
         }
         if (cursors.left.isDown || keys.A.isDown) {
           dino.setVelocityX(-400)
@@ -219,8 +221,8 @@
         if (dino.body.touching.down) {
           dino.setVelocityY(-1100)
           dino.currentJumps++
-          console.log(dino.currentJumps)
-        } else if (dino.currentJumps < dino.totalJumps) {
+          console.log("Current jumps:" + String(dino.currentJumps))
+        } else if (dino.currentJumps === dino.totalJumps) {
           //If the player is not on the ground but has an available air jump, use that jump
           dino.setVelocityY(-800)
           dino.currentJumps++
