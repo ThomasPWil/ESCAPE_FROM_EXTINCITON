@@ -28,22 +28,22 @@
 
     };
 
-    class dino extends Phaser.Physics.Arcade.Sprite
-    {
-        carrotsEaten = 0;
-        totalJumps = 2;
-        currentJumps = 0;
-        lives = 3;
-        constructor(scene, x, y)
-        {
-            super(scene, x, y, 'dino');
-            scene.add.existing(this);
-            scene.physics.add.existing(this);
-            this.setScale(2);
-            //this.setCollideWorldBounds(true);
-            this.setGravityY(3000); //We will set gravity *per object* rather than for the scene!
-        }
-    }
+//    class dino extends Phaser.Physics.Arcade.Sprite
+//    {
+//        carrotsEaten = 0;
+//        totalJumps = 2;
+//        currentJumps = 0;
+//        lives = 3;
+//        constructor(scene, x, y)
+//        {
+//            super(scene, x, y, 'dino');
+//            scene.add.existing(this);
+//            scene.physics.add.existing(this);
+//            this.setScale(2);
+//            //this.setCollideWorldBounds(true);
+//            this.setGravityY(3000); //We will set gravity *per object* rather than for the scene!
+//        }
+//    }
 
     class Dino extends Phaser.Physics.Arcade.Sprite 
     {
@@ -194,7 +194,6 @@
     function preload()
     {   
         // envoirment assets
-        this.load.image('sky', 'assets/clouds.png');
         this.load.image('platform003', 'assets/platform003.png');
         this.load.image('stillLava','assets/Lava_still.png');
       
@@ -221,11 +220,11 @@
       
         // Dino dino
         let animations = {}
-        //var run = this.anims.create({ key: 'dinoDayRun/dinoDayRun', frames: this.anims.generateFrameNames('dino', { prefix: 'dinoDayRun/dinoDayRun', end: 3, zeroPad: 3 }), repeat: -1, frameRate:8});
-        var run = this.anims.create({key: 'run/dinoDayRun',frames: this.anims.generateFrameNames('dino', {prefix: 'run/dinoDayRun',end: 3,zeroPad: 3 }),repeat: -1,frameRate: 8})
+        //var run = this.anims.create({ key: 'dinoDaydinoDayRun', frames: this.anims.generateFrameNames('dino', { prefix: 'dinoDaydinoDayRun', end: 3, zeroPad: 3 }), repeat: -1, frameRate:8});
+        var run = this.anims.create({key: 'dinoDayRun',frames: this.anims.generateFrameNames('dino', {prefix: 'dinoDayRun',end: 3,zeroPad: 3 }),repeat: -1,frameRate: 8})
         animations['run'] = run
 
-        var jumpAnimation = this.anims.create({key: 'run/DinoDayRun_Jump',frames: this.anims.generateFrameNames('dino', {prefix: 'run/DinoDayRun_Jump',end: 0,zeroPad: 0}),repeat: -1,frameRate: 1})
+        var jumpAnimation = this.anims.create({key: 'DinoDayRun_Jump',frames: this.anims.generateFrameNames('dino', {prefix: 'DinoDayRun_Jump',end: 0,zeroPad: 0}),repeat: -1,frameRate: 1})
         animations['jump'] = jumpAnimation
         createPlatforms(this)
         start(this);
@@ -297,7 +296,7 @@
        // creating lava and have it collide with dino
        
        
-       lavaGround = this.add.tileSprite(0, 700, 10000, 100, 'stillLava').setScrollFactor(0,1);
+       lavaGround = this.add.tileSprite(0, 700, 20000, 100, 'stillLava').setScrollFactor(0,1);
        this.physics.add.existing(lavaGround);
        
        
@@ -336,13 +335,10 @@
 
        if (active = true){
        this.timedEvent = this.time.delayedCall(100, Createmeteor, [], this);
-       meteor = new Meteor(this,500,200, 'meteor', 'meteor-animation');
+       //meteor = new Meteor(this,500,200, 'meteor', 'meteor-animation');
        }
 
        
-       this.physics.add.existing(meteor);
-       this.physics.add.overlap(meteor, platforms);
-       this.physics.add.collider(dino, meteor, meteorCollide, null,this);
        
        meteorGroup.push(meteor);
 
@@ -434,13 +430,13 @@
 
     function update()
     {
-        /*if(playing){
+        if(playing){
             scoreTimer--;
         if(scoreTimer===0){
             scoreChange(10*(curlev+1))
             scoreTimer=100
         }
-        }*/
+        }
         
         if(dashtime>0){
           dashtime--;
@@ -454,8 +450,10 @@
             start();
             level(++curlev)            
         }
-        meteor.setVelocityX(-300);
-
+        
+        if (meteor != null) {
+            meteor.setVelocityX(-300);
+        }
         background.tilePositionX += 2;
         lavaGround.tilePositionX += 2;
         
@@ -602,8 +600,7 @@
          
     function meteorCollide(dino,meteor){
 
-   
-   if (invisframes === 0)
+   if (invisframes === 0&&playing)
    { 
     // bounce dino back upon meteor collide
        hpchange(-1);
@@ -613,8 +610,13 @@
 
    function Createmeteor()
     {
-        meteor.destroy();
+        if (meteor != null) {
+            meteor.destroy();
+        }
         meteor = new Meteor(this,dino.x + 500, dino.y + Phaser.Math.Between(100,150), 'meteor', 'meteor-animation');
+        this.physics.add.existing(meteor);
+        this.physics.add.overlap(meteor, platforms);
+        this.physics.add.overlap(dino, meteor, meteorCollide, null,this);
         this.timedEvent = this.time.delayedCall(5000, Createmeteor, [], this);
     }
        
@@ -625,7 +627,7 @@
         
     function level(lev){
         let vel = Math.max(5,lev);
-        curvel=400+vel*20
+        curvel=400+vel*50
     }
     function scoreChange(amt){
         score+=amt

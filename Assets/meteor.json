@@ -1,0 +1,90 @@
+{
+  "frames": [
+    {
+      "filename": "meteor/meteor001",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 103,
+        "h": 26
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 3,
+        "w": 103,
+        "h": 26
+      },
+      "sourceSize": {
+        "w": 103,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "meteor/meteor002",
+      "frame": {
+        "x": 103,
+        "y": 0,
+        "w": 102,
+        "h": 30
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 102,
+        "h": 30
+      },
+      "sourceSize": {
+        "w": 103,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "meteor/meteor000",
+      "frame": {
+        "x": 0,
+        "y": 26,
+        "w": 100,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 103,
+        "h": 32
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ],
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "meteor.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 205,
+      "h": 58
+    },
+    "scale": 1
+  }
+}

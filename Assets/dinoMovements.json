@@ -1,0 +1,190 @@
+{
+  "frames": [
+    {
+      "filename": "dinoDayRun_Dash0",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 166,
+        "h": 57
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 19,
+        "w": 166,
+        "h": 57
+      },
+      "sourceSize": {
+        "w": 167,
+        "h": 96
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "dinoDayRun003",
+      "frame": {
+        "x": 166,
+        "y": 0,
+        "w": 167,
+        "h": 72
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 29,
+        "w": 167,
+        "h": 72
+      },
+      "sourceSize": {
+        "w": 204,
+        "h": 104
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "dinoDayRun002",
+      "frame": {
+        "x": 333,
+        "y": 0,
+        "w": 165,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 7,
+        "y": 23,
+        "w": 165,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 204,
+        "h": 104
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "dinoDayRun_DoubleJump0",
+      "frame": {
+        "x": 498,
+        "y": 0,
+        "w": 156,
+        "h": 80
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 6,
+        "y": 11,
+        "w": 156,
+        "h": 80
+      },
+      "sourceSize": {
+        "w": 167,
+        "h": 96
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "DinoDayRun_Jump0",
+      "frame": {
+        "x": 654,
+        "y": 0,
+        "w": 124,
+        "h": 94
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 16,
+        "y": 1,
+        "w": 124,
+        "h": 94
+      },
+      "sourceSize": {
+        "w": 167,
+        "h": 96
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "dinoDayRun001",
+      "frame": {
+        "x": 778,
+        "y": 0,
+        "w": 159,
+        "h": 98
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 2,
+        "y": 3,
+        "w": 159,
+        "h": 98
+      },
+      "sourceSize": {
+        "w": 192,
+        "h": 101
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    {
+      "filename": "dinoDayRun000",
+      "frame": {
+        "x": 937,
+        "y": 0,
+        "w": 134,
+        "h": 100
+      },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": {
+        "x": 6,
+        "y": 1,
+        "w": 134,
+        "h": 100
+      },
+      "sourceSize": {
+        "w": 173,
+        "h": 102
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  ],
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "dinoMovements.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1071,
+      "h": 100
+    },
+    "scale": 1
+  }
+}
